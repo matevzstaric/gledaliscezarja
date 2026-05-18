@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Vercel
+.vercel
+
+# Editor
+.vscode/
+.idea/
+
+# Dependencies (in case we add them later)
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log

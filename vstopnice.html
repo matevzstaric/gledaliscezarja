@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vstopnice — Gledališče Zarja Celje</title>
+<meta name="description" content="Spletni nakup vstopnic za predstave Gledališča Zarja Celje. Izberite predstavo, termin in sedež.">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============== HEADER / NAV ============== -->
+<header class="site-header">
+  <div class="nav">
+    <a href="index.html" class="nav__logo">
+      <img src="img/zarja_logo.png" alt="Gledališče Zarja Celje">
+    </a>
+    <button class="nav__toggle" aria-label="Meni" onclick="document.getElementById('mainNav').classList.toggle('open')">☰</button>
+    <ul class="nav__links" id="mainNav">
+      <li><a href="index.html#o-nas">O nas</a></li>
+      <li><a href="index.html#repertoar">Repertoar</a></li>
+      <li><a href="index.html#nagrade">Nagrade</a></li>
+      <li><a href="index.html#festival">Festival</a></li>
+      <li><a href="index.html#clanstvo">Članstvo</a></li>
+      <li><a class="nav__cta" href="vstopnice.html">Vstopnice</a></li>
+    </ul>
+  </div>
+</header>
+
+<div class="book-shell">
+  <div class="book-header">
+    <div class="container">
+      <h1>Nakup vstopnic</h1>
+      <p>Izberite predstavo, termin in sedeže. Vstopnice prejmete na e-naslov takoj po potrditvi.</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:2rem;">
+    <!-- Step 1: Show picker -->
+    <div id="showPicker"></div>
+
+    <!-- Step 2: Performance picker -->
+    <div id="performancePicker" class="hide"></div>
+
+    <!-- Step 3: Seat picker + cart sidebar -->
+    <div id="bookingLayout" class="booking-layout hide"></div>
+  </div>
+</div>
+
+<!-- ============== CHECKOUT MODAL ============== -->
+<div class="modal-bg" id="checkoutModal">
+  <div class="modal" id="checkoutBody"></div>
+</div>
+
+<!-- ============== FOOTER (compact) ============== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer__brand">
+        <img src="img/zarja_logo.png" alt="Gledališče Zarja Celje">
+        <p style="font-size:.88rem; line-height:1.7;">Kulturno umetniško društvo<br>Zarja Trnovlje — Celje<br>Kulturniška ulica 4, 3000 Celje</p>
+      </div>
+      <div>
+        <h4>Pomoč pri nakupu</h4>
+        <ul>
+          <li><a href="mailto:info@kud-zarja.si">info@kud-zarja.si</a></li>
+          <li><a href="tel:+38631744654">031 744 654</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Navigacija</h4>
+        <ul>
+          <li><a href="index.html">Domov</a></li>
+          <li><a href="index.html#repertoar">Repertoar</a></li>
+          <li><a href="index.html#festival">Festival</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Splošno</h4>
+        <ul>
+          <li>Vstopnice so neprenosljive</li>
+          <li>Prosimo, pridite 15 min pred začetkom</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div>© 2026 KUD Zarja Trnovlje — Celje.</div>
+      <div>gledalisce-zarja.si</div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/shows.js"></script>
+<script src="js/booking.js"></script>
+</body>
+</html>
