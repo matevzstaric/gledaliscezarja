@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Novačanov festival — Gledališče Zarja Celje</title>
+<meta name="description" content="Novačanov festival ljubiteljskega gledališča v Celju — eden najvidnejših ljubiteljskih festivalov v Sloveniji s 30-letno tradicijo.">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav">
+    <a href="index.html" class="nav__logo"><img src="img/zarja_logo.png" alt="Gledališče Zarja Celje"></a>
+    <button class="nav__toggle" aria-label="Meni" onclick="document.getElementById('mainNav').classList.toggle('open')">☰</button>
+    <ul class="nav__links" id="mainNav">
+      <li><a href="index.html">Domov</a></li>
+      <li><a href="repertoar.html">Repertoar</a></li>
+      <li><a href="o-nas.html">O nas</a></li>
+      <li><a href="festival.html" class="active">Festival</a></li>
+      <li><a href="storitve.html">Storitve</a></li>
+      <li><a class="nav__cta" href="vstopnice.html">Vstopnice</a></li>
+    </ul>
+  </div>
+</header>
+
+<section class="page-header">
+  <div class="container page-header__inner">
+    <div class="crumb"><a href="index.html">Domov</a> / Festival</div>
+    <h1>Novačanov festival</h1>
+    <p>Eden najvidnejših ljubiteljskih festivalov v Sloveniji z več kot 30-letno tradicijo.</p>
+  </div>
+</section>
+
+<section class="section festival">
+  <div class="container">
+    <div class="festival-grid">
+      <div>
+        <span class="eyebrow">O festivalu</span>
+        <h2 class="mt-0">Festival ljubiteljskega gledališča.</h2>
+        <p class="lead">Festival je bil sprva v svojih začetkih prirejan kot srečanja prijateljskih gledaliških hiš, v čast lokalnemu pisatelju, pesniku in dramatiku dr. Antonu Novačanu. Kasneje je prerasel v festival tekmovalnega značaja s selektorskim izborom, festivalskimi nagradami ter spremljevalnim programom.</p>
+        <p>Festival poteka v mesecu oktobru in novembru. Po selektorskem izboru se v tekmovalni program uvrsti 5 predstav, ki jih ocenjuje občinstvo z ocenami od 1 do 5. Na koncu festivala predstava s skupno najvišjo oceno občinstva prejme glavno nagrado — kipec <strong>Tulipan</strong> za najboljšo predstavo po oceni občinstva.</p>
+        <p>Vsako predstavo spremlja tudi posebna strokovna komisija, ki po vsaki predstavi podeli posebno nagrado — igralec ali igralka večera, ki prejme posebno priznanje.</p>
+      </div>
+      <div class="festival-card">
+        <h3>33. Novačanov festival</h3>
+        <p style="margin-bottom:1.2rem;"><strong>Oktober – november 2026</strong><br>5 predstav v tekmovalnem programu<br>Glavna nagrada: <em>Tulipan</em></p>
+        <div style="display:flex; gap:.8rem; flex-wrap:wrap;">
+          <a class="btn btn--ghost" href="#prijava">Prijavi predstavo →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="prijava" style="background:#efece7;">
+  <div class="container">
+    <div style="max-width:680px; margin:0 auto;">
+      <span class="eyebrow">Prijava</span>
+      <h2 class="mt-0">Prijava na 33. Novačanov festival</h2>
+      <p class="lead">Vaše prijave sprejemamo prek spletnega obrazca. Po oddaji prejmete potrditev na vaš e-naslov.</p>
+
+      <form onsubmit="event.preventDefault(); alert('Prijava poslana! Potrditev sledi na vaš e-naslov.');" style="background:#fff; border:1px solid var(--c-line); border-radius:8px; padding:2rem; margin-top:1.5rem;">
+        <div class="form-row"><label>Ime gledališke skupine</label><input required type="text" placeholder="npr. KUD ..."></div>
+        <div class="form-row"><label>Naslov predstave</label><input required type="text"></div>
+        <div class="form-row"><label>Avtor besedila</label><input type="text"></div>
+        <div class="form-row--two">
+          <div class="form-row"><label>Režiser</label><input type="text"></div>
+          <div class="form-row"><label>Trajanje (min)</label><input type="number"></div>
+        </div>
+        <div class="form-row"><label>Kratek opis predstave</label><input type="text"></div>
+        <div class="form-row--two">
+          <div class="form-row"><label>Kontaktna oseba</label><input required type="text"></div>
+          <div class="form-row"><label>E-naslov</label><input required type="email"></div>
+        </div>
+        <div class="form-row"><label>Telefon</label><input type="tel"></div>
+        <button class="btn btn--primary" type="submit" style="width:100%; justify-content:center;">Oddaj prijavo</button>
+      </form>
+
+      <p style="margin-top:1.5rem; color:var(--c-muted); font-size:.9rem;">Za dodatne informacije nas kontaktirajte na <a href="mailto:info@kud-zarja.si">info@kud-zarja.si</a> ali <a href="tel:+38641744654">041 744 654</a>.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer__brand">
+        <img src="img/zarja_logo.png" alt="Gledališče Zarja Celje">
+        <p style="font-size:.88rem; line-height:1.7;">Kulturno umetniško društvo<br>Zarja Trnovlje — Celje</p>
+      </div>
+      <div><h4>Navigacija</h4><ul>
+        <li><a href="index.html">Domov</a></li><li><a href="repertoar.html">Repertoar</a></li><li><a href="o-nas.html">O nas</a></li><li><a href="festival.html">Festival</a></li><li><a href="storitve.html">Storitve</a></li><li><a href="vstopnice.html">Vstopnice</a></li>
+      </ul></div>
+      <div><h4>Kontakt</h4><ul>
+        <li><a href="mailto:info@kud-zarja.si">info@kud-zarja.si</a></li>
+        <li><a href="tel:+38641744654">041 744 654</a></li>
+      </ul></div>
+      <div><h4>Naslov</h4><ul>
+        <li>Kulturniška ulica 4</li><li>3000 Celje</li>
+      </ul></div>
+    </div>
+    <div class="footer__bottom">
+      <div>© 2026 KUD Zarja Trnovlje — Celje.</div>
+      <div>gledaliscezarja.si</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
