@@ -31,41 +31,41 @@
   </div>
 </header>
 
-<!-- NEWS / AWARD STRIP -->
-<div class="news-strip">
+<!-- NEWS / AWARD STRIP (populated from settings) -->
+<div class="news-strip" id="newsStrip" style="display:none;">
   <div class="container">
     <div class="news-strip__inner">
       <span class="news-strip__badge">Novo</span>
-      <span>Predstava <strong>Goli pianist</strong> prejela nagrado za najboljšo predstavo Festivala komedije Pekre 2025.</span>
-      <a href="o-nas.html#nagrade">Vse nagrade →</a>
+      <span id="newsStripText"></span>
+      <a id="newsStripLink" href="o-nas.html#nagrade"></a>
     </div>
   </div>
 </div>
 
-<!-- FEATURED PRODUCTION HERO -->
-<section class="featured">
+<!-- FEATURED PRODUCTION HERO (populated from settings: hero_featured_show_id) -->
+<section class="featured" id="featuredHero">
   <div class="container">
     <div class="featured-grid">
       <div class="featured__poster">
-        <span class="show-card__badge">Sezona 2025/26</span>
-        <div class="featured__poster-title">Lepotica<br>in zver</div>
+        <span class="show-card__badge" id="featuredSeason">Sezona 2025/26</span>
+        <div class="featured__poster-title" id="featuredPosterTitle">…</div>
       </div>
       <div>
-        <span class="meta-tag">Premiera sezone</span>
-        <h1 style="font-size: clamp(2rem, 4.5vw, 3.6rem); margin-bottom:1rem;">Lepotica in zver</h1>
-        <p class="lead">Letošnja pravljica nagovarja predvsem pojem lepote v današnjem svetu — kako jo najdemo in prepoznamo znotraj sebe, ne le zunaj. Spodbujanje prepoznave pristne lepote v vsakem posamezniku.</p>
+        <span class="meta-tag" id="featuredEyebrow">Premiera sezone</span>
+        <h1 id="featuredTitle" style="font-size: clamp(2rem, 4.5vw, 3.6rem); margin-bottom:1rem;">…</h1>
+        <p class="lead" id="featuredDescription">…</p>
 
-        <div class="next-date">
+        <div class="next-date" id="featuredNextDate" style="display:none;">
           <div>
-            <div class="label">Premiera</div>
-            <div class="value">3. december 2026 · 17:00</div>
+            <div class="label">Naslednji termin</div>
+            <div class="value" id="featuredNextDateValue"></div>
           </div>
         </div>
 
-        <p style="color:rgba(255,255,255,.7); font-size:.95rem;"><strong style="color:#fff;">Otroška predstava</strong> · 40 minut · Režija: Urška Majcen</p>
+        <p id="featuredMeta" style="color:rgba(255,255,255,.7); font-size:.95rem;"></p>
 
         <div class="hero__actions">
-          <a class="btn btn--primary" href="vstopnice.html?show=lepotica-in-zver">Kupi vstopnice →</a>
+          <a class="btn btn--primary" id="featuredBuyBtn" href="vstopnice.html">Kupi vstopnice →</a>
           <a class="btn btn--ghost" href="repertoar.html">Ves repertoar</a>
         </div>
       </div>
@@ -125,29 +125,12 @@
   </div>
 </section>
 
-<!-- SPONSORS -->
+<!-- SPONSORS (populated from sponsors table) -->
 <section class="sponsors section--tight">
   <div class="container">
     <div class="group">
       <h3>Sponzorji, donatorji in pokrovitelji</h3>
-      <div class="logo-row">
-        <div class="logo-chip">JSKD</div>
-        <div class="logo-chip">MOC</div>
-        <div class="logo-chip">ZKD Celje</div>
-        <div class="logo-chip">Grafika Gracer</div>
-        <div class="logo-chip">Bimex</div>
-        <div class="logo-chip">AGRAM gradbeništvo</div>
-        <div class="logo-chip">MANSION</div>
-        <div class="logo-chip">Kopirnica TOMI</div>
-        <div class="logo-chip">XREARTIST</div>
-        <div class="logo-chip">AHAC</div>
-        <div class="logo-chip">Novi Tednik</div>
-        <div class="logo-chip">Radio Celje</div>
-        <div class="logo-chip">TV Celje</div>
-        <div class="logo-chip">Celje.info</div>
-        <div class="logo-chip">Celjan</div>
-        <div class="logo-chip">V Celu dogaja</div>
-      </div>
+      <div class="logo-row" id="sponsorList"></div>
     </div>
   </div>
 </section>
@@ -215,8 +198,62 @@
   <button class="contact-fab__btn" aria-label="Kontakt" onclick="document.getElementById('fab').classList.toggle('open')">✉</button>
 </div>
 
-<script src="js/shows.js"></script>
+<!-- Supabase SDK + data layer -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/data.js"></script>
 <script src="js/calendar.js"></script>
-<script>renderCalendarList('calendarList');</script>
+<script>
+(async function initHome() {
+  // === News strip ===
+  try {
+    const settings = await data.getSettings();
+    const text = settings.news_strip_text;
+    if (text) {
+      document.getElementById('newsStripText').textContent = text;
+      const linkEl = document.getElementById('newsStripLink');
+      linkEl.textContent = settings.news_strip_link_text || 'Več →';
+      linkEl.href = settings.news_strip_link_url || '#';
+      document.getElementById('newsStrip').style.display = '';
+    }
+
+    // === Featured production hero ===
+    const featuredId = settings.hero_featured_show_id;
+    if (featuredId) {
+      const show = await data.getShow(featuredId);
+      if (show) {
+        const performances = await data.listPerformancesForShow(show.id);
+        const next = performances[0];
+        document.getElementById('featuredSeason').textContent = show.season || '';
+        document.getElementById('featuredPosterTitle').innerHTML = show.poster_title || show.title;
+        document.getElementById('featuredEyebrow').textContent = settings.hero_eyebrow || 'Premiera sezone';
+        document.getElementById('featuredTitle').textContent = show.title;
+        document.getElementById('featuredDescription').textContent = show.description || '';
+        document.getElementById('featuredMeta').innerHTML =
+          `<strong style="color:#fff;">${show.type}</strong> · ${show.duration_minutes} minut · Režija: ${show.director}`;
+        document.getElementById('featuredBuyBtn').href = `vstopnice.html?show=${show.id}`;
+        if (next) {
+          const d = new Date(next.performance_date + 'T00:00:00');
+          const months = ['januar','februar','marec','april','maj','junij','julij','avgust','september','oktober','november','december'];
+          document.getElementById('featuredNextDateValue').textContent =
+            `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()} · ${fmtTime(next.performance_time)}`;
+          document.getElementById('featuredNextDate').style.display = '';
+        }
+      }
+    }
+  } catch (e) { console.error('Home init failed', e); }
+
+  // === Calendar ===
+  renderCalendarList('calendarList');
+
+  // === Sponsors ===
+  try {
+    const sponsors = await data.listSponsors();
+    document.getElementById('sponsorList').innerHTML = sponsors
+      .map(s => `<div class="logo-chip" title="${s.tier}">${s.name}</div>`)
+      .join('');
+  } catch (e) { console.error('Sponsors failed', e); }
+})();
+</script>
 </body>
 </html>
