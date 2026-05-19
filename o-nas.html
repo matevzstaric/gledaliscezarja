@@ -79,9 +79,13 @@
     <h2>Naš ansambel.</h2>
     <p class="lead">Gledališče Zarja Celje trenutno sestavlja 40 aktivnih članov in članic v različnih funkcijah.</p>
 
-    <h3 class="subgroup-title">Igralski ansambel</h3>
-    <div class="group-photo">SKUPINSKA FOTOGRAFIJA · IGRALSKI ANSAMBEL</div>
+    <h3 class="subgroup-title">Članstvo</h3>
+    <div class="group-photo">SKUPINSKA FOTOGRAFIJA · ČLANSTVO</div>
     <div class="ensemble-grid" id="ensembleIgralci"></div>
+
+    <h3 class="subgroup-title">Teatrarij</h3>
+    <div class="group-photo">SKUPINSKA FOTOGRAFIJA · TEATRARIJ</div>
+    <div class="ensemble-grid" id="ensembleTeatrarij"></div>
 
     <h3 class="subgroup-title">Tehnična ekipa</h3>
     <div class="group-photo">SKUPINSKA FOTOGRAFIJA · TEHNIČNA EKIPA</div>
@@ -107,7 +111,21 @@
     <span class="eyebrow">Nagrade in dosežki</span>
     <h2 class="mt-0">Več kot pol stoletja priznanih dosežkov.</h2>
 
-    <div class="awards-grid" id="awardsGrid"></div>
+    <div class="awards-filter-bar">
+      <div class="awards-filter-group">
+        <label for="filterCategory">Podeljevalec</label>
+        <select id="filterCategory"><option value="">Vsi</option></select>
+      </div>
+      <div class="awards-filter-group">
+        <label for="filterRecipient">Prejemnik</label>
+        <select id="filterRecipient"><option value="">Vsi</option></select>
+      </div>
+      <button class="btn btn--ghost" id="clearFilters" style="border-color:rgba(255,255,255,.4); margin-top:.6rem;">Počisti</button>
+      <div class="awards-count" id="awardsCount"></div>
+    </div>
+
+    <div class="awards-list" id="awardsList"></div>
+    <div id="awardsEmpty" class="awards-empty hide">Ni rezultatov za izbrane filtre.</div>
   </div>
 </section>
 
@@ -207,47 +225,88 @@ function leaderCard(m) {
 
 (async function initONas() {
   // Ensemble
-  const [igralci, tehnika, vodstvo, ostali] = await Promise.all([
+  const [igralci, teatrarij, tehnika, vodstvo, ostali] = await Promise.all([
     data.listEnsemble({ group: 'igralci' }),
+    data.listEnsemble({ group: 'teatrarij' }),
     data.listEnsemble({ group: 'tehnika' }),
     data.listEnsemble({ group: 'vodstvo' }),
     data.listEnsemble({ group: 'ostali' }),
   ]);
 
   document.getElementById('ensembleIgralci').innerHTML = igralci.map(ensembleCard).join('');
+  document.getElementById('ensembleTeatrarij').innerHTML = teatrarij.map(ensembleCard).join('');
   document.getElementById('ensembleTehnika').innerHTML = tehnika.map(ensembleCard).join('');
   document.getElementById('leadershipVodstvo').innerHTML = vodstvo.map(leaderCard).join('');
   document.getElementById('leadershipOstali').innerHTML = ostali.map(leaderCard).join('');
 
-  // Awards — group by category
+  // Awards — single chronological list (newest → oldest) with filters
   const awards = await data.listAwards();
-  const byCategory = {};
-  awards.forEach(a => {
-    if (!byCategory[a.category]) byCategory[a.category] = [];
-    byCategory[a.category].push(a);
+  // Sort by year desc, then display_order asc (consistent grouping within a year)
+  awards.sort((a, b) => b.year - a.year || (a.display_order || 0) - (b.display_order || 0));
+
+  // Build filter dropdowns from unique values
+  const categories = [...new Set(awards.map(a => a.category).filter(Boolean))].sort();
+  const recipients = [...new Set(awards.map(a => a.recipient).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, 'sl'));
+
+  const catSelect = document.getElementById('filterCategory');
+  categories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    catSelect.appendChild(opt);
+  });
+  const recSelect = document.getElementById('filterRecipient');
+  recipients.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r; opt.textContent = r;
+    recSelect.appendChild(opt);
   });
 
-  const root = document.getElementById('awardsGrid');
-  const cats = Object.keys(byCategory);
-  // Last category gets full width if there are many entries
-  root.innerHTML = cats.map((cat, i) => {
-    const list = byCategory[cat];
-    const wide = list.length >= 7 ? 'style="grid-column: 1 / -1;"' : '';
+  function renderAwardRow(a) {
+    const parts = [];
+    if (a.role_or_description) parts.push(a.role_or_description);
+    if (a.show_title) parts.push(`<em>${a.show_title}</em>`);
+    const detail = parts.join(' — ');
+    const recipientHtml = a.recipient
+      ? `<strong>${a.recipient}</strong>${detail ? ' · ' + detail : ''}`
+      : (detail || '');
     return `
-      <div class="award-block" ${wide}>
-        <h3>${cat}</h3>
-        <ul>
-          ${list.map(a => {
-            const parts = [];
-            if (a.recipient) parts.push(a.recipient);
-            if (a.role_or_description) parts.push(a.role_or_description);
-            if (a.show_title) parts.push(`<strong>${a.show_title}</strong>`);
-            return `<li><span class="yr">${a.year}</span><span>${parts.join(' — ')}</span></li>`;
-          }).join('')}
-        </ul>
+      <div class="award-row" data-category="${a.category}" data-recipient="${a.recipient || ''}">
+        <div class="award-row__year">${a.year}</div>
+        <div class="award-row__category">${a.category}</div>
+        <div class="award-row__detail">${recipientHtml}</div>
       </div>
     `;
-  }).join('');
+  }
+
+  function applyFilters() {
+    const cat = catSelect.value;
+    const rec = recSelect.value;
+    const filtered = awards.filter(a =>
+      (!cat || a.category === cat) &&
+      (!rec || a.recipient === rec)
+    );
+    const listEl = document.getElementById('awardsList');
+    const emptyEl = document.getElementById('awardsEmpty');
+    const countEl = document.getElementById('awardsCount');
+    if (filtered.length === 0) {
+      listEl.innerHTML = '';
+      emptyEl.classList.remove('hide');
+    } else {
+      listEl.innerHTML = filtered.map(renderAwardRow).join('');
+      emptyEl.classList.add('hide');
+    }
+    countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'nagrada' : (filtered.length < 5 ? 'nagrade' : 'nagrad')}`;
+  }
+
+  catSelect.addEventListener('change', applyFilters);
+  recSelect.addEventListener('change', applyFilters);
+  document.getElementById('clearFilters').addEventListener('click', () => {
+    catSelect.value = '';
+    recSelect.value = '';
+    applyFilters();
+  });
+  applyFilters();
 })();
 </script>
 

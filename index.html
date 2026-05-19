@@ -46,7 +46,7 @@
 <section class="featured" id="featuredHero">
   <div class="container">
     <div class="featured-grid">
-      <div class="featured__poster">
+      <div class="featured__poster" id="featuredPosterWrap">
         <span class="show-card__badge" id="featuredSeason">Sezona 2025/26</span>
         <div class="featured__poster-title" id="featuredPosterTitle">…</div>
       </div>
@@ -225,7 +225,20 @@
         const performances = await data.listPerformancesForShow(show.id);
         const next = performances[0];
         document.getElementById('featuredSeason').textContent = show.season || '';
-        document.getElementById('featuredPosterTitle').innerHTML = show.poster_title || show.title;
+        if (show.poster_url) {
+          const wrap = document.getElementById('featuredPosterWrap');
+          // Add an <img> on top of the existing poster placeholder
+          const img = document.createElement('img');
+          img.src = show.poster_url;
+          img.alt = show.title;
+          img.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;';
+          wrap.appendChild(img);
+          // Keep the badge visible above the image
+          document.getElementById('featuredSeason').style.zIndex = '2';
+          document.getElementById('featuredPosterTitle').style.display = 'none';
+        } else {
+          document.getElementById('featuredPosterTitle').innerHTML = show.poster_title || show.title;
+        }
         document.getElementById('featuredEyebrow').textContent = settings.hero_eyebrow || 'Premiera sezone';
         document.getElementById('featuredTitle').textContent = show.title;
         document.getElementById('featuredDescription').textContent = show.description || '';

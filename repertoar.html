@@ -94,11 +94,15 @@ function renderShowCard(s, opts = {}) {
   ].filter(Boolean).join('');
   const badge = opts.badge ? `<span class="show-card__badge">${opts.badge}</span>` : '';
   const posterTitle = (s.poster_title || s.title).replace(/\n/g, '<br>');
+  // If poster_url is set, render the image; otherwise fall back to stylized text
+  const poster = s.poster_url
+    ? `<img src="${s.poster_url}" alt="${s.title}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">`
+    : `<div class="show-card__poster-title">${posterTitle}</div>`;
   return `
     <article class="show-card">
       <div class="show-card__poster">
         ${badge}
-        <div class="show-card__poster-title">${posterTitle}</div>
+        ${poster}
       </div>
       <div class="show-card__body">
         <h3 class="show-card__title">${s.title}</h3>

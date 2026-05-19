@@ -289,6 +289,88 @@ p { margin: 0 0 1em; }
 }
 .award-block li strong { color: #fff; font-weight: 600; }
 
+/* Awards filter bar + chronological list */
+.awards-filter-bar {
+  display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-end;
+  margin: 2.5rem 0 1.5rem;
+  padding: 1.5rem;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 6px;
+}
+.awards-filter-group {
+  display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 200px;
+}
+.awards-filter-group label {
+  font-size: .72rem; letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(255,255,255,.65); font-weight: 600;
+}
+.awards-filter-group select {
+  padding: .65rem .9rem;
+  background: rgba(0,0,0,.3);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 4px;
+  font-family: inherit; font-size: .95rem;
+  cursor: pointer;
+}
+.awards-filter-group select:focus { outline: none; border-color: var(--c-red); }
+.awards-filter-group select option { background: var(--c-anthracite); color: #fff; }
+
+.awards-count {
+  margin-left: auto; align-self: flex-end;
+  font-size: .85rem; color: rgba(255,255,255,.6);
+  text-transform: uppercase; letter-spacing: .12em; font-weight: 600;
+}
+
+.awards-list {
+  display: flex; flex-direction: column;
+}
+.award-row {
+  display: grid;
+  grid-template-columns: 90px minmax(220px, 320px) 1fr;
+  gap: 1.5rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  align-items: baseline;
+}
+.award-row:hover { background: rgba(255,255,255,.02); }
+.award-row__year {
+  font-family: var(--font-display); font-size: 1.8rem; font-weight: 700;
+  color: var(--c-red); line-height: 1; font-variant-numeric: tabular-nums;
+}
+.award-row__category {
+  font-size: .75rem; letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(255,255,255,.7); font-weight: 600;
+}
+.award-row__detail {
+  color: #e6e6e6; font-size: .95rem; line-height: 1.55;
+}
+.award-row__detail strong { color: #fff; font-weight: 600; }
+.award-row__detail em { color: #fff; font-style: italic; font-weight: 500; }
+
+@media (max-width: 700px) {
+  .award-row {
+    grid-template-columns: 60px 1fr;
+    gap: .8rem 1rem;
+  }
+  .award-row__category {
+    grid-column: 2;
+  }
+  .award-row__detail {
+    grid-column: 2;
+  }
+  .award-row__year {
+    grid-row: 1 / span 2;
+    font-size: 1.4rem;
+  }
+}
+
+.awards-empty {
+  text-align: center; padding: 3rem 1rem;
+  color: rgba(255,255,255,.5); font-style: italic;
+}
+
 /* ==========================================================================
    Festival
    ========================================================================== */
