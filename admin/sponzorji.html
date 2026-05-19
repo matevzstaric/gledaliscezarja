@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sponzorji — Admin Zarja</title>
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin">
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar__brand">
+      <img src="../img/zarja_logo.png" alt="Zarja">
+      <span class="tag">Admin</span>
+    </div>
+    <nav class="admin-nav">
+      <ul>
+        <li><a href="index.html"><span class="icon">⌂</span>Nadzorna plošča</a></li>
+        <li><a href="predstave.html"><span class="icon">🎭</span>Predstave</a></li>
+        <li><a href="termini.html" class=""><span class="icon">📅</span>Termini</a></li>
+        <li><a href="ansambel.html" class=""><span class="icon">👥</span>Članstvo</a></li>
+        <li><a href="nagrade.html" class=""><span class="icon">🏆</span>Nagrade</a></li>
+        <li><a href="sponzorji.html" class="active"><span class="icon">💎</span>Sponzorji</a></li>
+        <li><a href="rezervacije.html" class=""><span class="icon">🎟</span>Rezervacije</a></li>
+        <li><a href="nastavitve.html" class=""><span class="icon">⚙</span>Nastavitve</a></li>
+      </ul>
+    </nav>
+    <div class="admin-sidebar__footer">
+      <div class="admin-user">Prijavljen kot:<br><strong id="adminUserEmail">…</strong></div>
+      <button onclick="admin.signOut()">Odjava</button>
+    </div>
+  </aside>
+
+  <main class="admin-content">
+    <div class="admin-header">
+      <div>
+        <h1>Sponzorji</h1>
+        <p class="sub">Ta stran je v izdelavi.</p>
+      </div>
+    </div>
+    <div class="dash-card" style="text-align:center; padding:3rem;">
+      <div style="font-size:3rem; margin-bottom:1rem;">💎</div>
+      <h3 style="margin:0 0 .4rem;">Kmalu na voljo</h3>
+      <p style="color:var(--c-muted); margin:0;">Skrbnik še gradi to stran. Za zdaj lahko vsebino urejaš v Supabase Table Editor.</p>
+      <a href="https://supabase.com/dashboard" target="_blank" class="btn btn--secondary" style="margin-top:1.2rem;">Odpri Supabase ↗</a>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/admin.js"></script>
+<script>admin.init();</script>
+
+</body>
+</html>

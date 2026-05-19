@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prijava — Admin Zarja</title>
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin">
+
+<div class="login-shell">
+  <div class="login-card">
+    <div class="login-card__brand">
+      <img src="../img/zarja_logo.png" alt="Zarja">
+      <div>
+        <div style="font-family:var(--font-display); font-size:.95rem; font-weight:700;">Admin</div>
+        <div style="font-size:.72rem; color:var(--c-muted); letter-spacing:.16em; text-transform:uppercase;">Gledališče Zarja Celje</div>
+      </div>
+    </div>
+
+    <h1>Prijava</h1>
+    <p class="sub">Vpišite e-naslov in poslali vam bomo enkratno povezavo za prijavo.</p>
+
+    <form id="loginForm">
+      <div class="form-row">
+        <label>E-naslov</label>
+        <input required type="email" name="email" placeholder="ime.priimek@email.si" autocomplete="email">
+      </div>
+      <button type="submit" class="btn btn--primary" id="loginBtn">Pošlji povezavo →</button>
+    </form>
+
+    <div class="login-card__notice hide" id="loginSuccess">
+      Preverite vaš e-naslov. Kliknite povezavo v sporočilu za prijavo. Sporočilo lahko pride v mapo Vsiljena pošta.
+    </div>
+    <div class="login-card__error hide" id="loginError"></div>
+
+    <p style="margin-top:2rem; text-align:center; font-size:.85rem;">
+      <a href="../index.html" style="color:var(--c-muted);">← Nazaj na spletno stran</a>
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script>
+// If already signed in, send straight to dashboard
+(async function() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) window.location.href = 'index.html';
+})();
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = e.target.email.value.trim().toLowerCase();
+  const btn = document.getElementById('loginBtn');
+  const ok = document.getElementById('loginSuccess');
+  const err = document.getElementById('loginError');
+
+  btn.disabled = true;
+  btn.textContent = 'Pošiljam...';
+  ok.classList.add('hide');
+  err.classList.add('hide');
+
+  const redirectTo = window.location.origin + window.location.pathname.replace('login.html', 'index.html');
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: redirectTo }
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Pošlji povezavo →';
+
+  if (error) {
+    err.textContent = 'Napaka: ' + error.message;
+    err.classList.remove('hide');
+  } else {
+    ok.classList.remove('hide');
+    e.target.email.value = '';
+  }
+});
+</script>
+
+</body>
+</html>
