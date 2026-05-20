@@ -26,6 +26,7 @@
         <li><a href="sponzorji.html"><span class="icon">💎</span>Sponzorji</a></li>
         <li><a href="rezervacije.html" class="active"><span class="icon">🎟</span>Rezervacije</a></li>
         <li><a href="nastavitve.html"><span class="icon">⚙</span>Nastavitve</a></li>
+        <li><a href="skrbniki.html"><span class="icon">🔑</span>Skrbniki</a></li>
       </ul>
     </nav>
     <div class="admin-sidebar__footer">
@@ -89,12 +90,31 @@ const STATUS_LABELS = {
 })();
 
 async function loadList() {
-  // Pull bookings + linked performance + linked show + seat count
+  // Pull bookings, then resolve performance + show via separate queries (more robust than nested join)
   const { data: rows, error } = await sb.from('bookings')
-    .select('*, performance:performances(performance_date, performance_time, show:shows(title)), booking_seats(id)')
+    .select('*, booking_seats(id)')
     .order('created_at', { ascending: false });
-  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
-  allRows = rows;
+  if (error) {
+    admin.toast('Napaka: ' + error.message, 'error');
+    console.error('rezervacije loadList:', error);
+    document.getElementById('rowsBody').innerHTML = `<tr><td colspan="8" class="empty">Napaka: ${error.message}</td></tr>`;
+    return;
+  }
+
+  // Fetch related performances + shows in one go and join in memory
+  const perfIds = [...new Set((rows || []).map(r => r.performance_id).filter(Boolean))];
+  let perfMap = {};
+  if (perfIds.length > 0) {
+    const { data: perfs } = await sb.from('performances').select('*').in('id', perfIds);
+    const showIds = [...new Set((perfs || []).map(p => p.show_id).filter(Boolean))];
+    const { data: shows } = showIds.length > 0
+      ? await sb.from('shows').select('id, title').in('id', showIds)
+      : { data: [] };
+    const showMap = Object.fromEntries((shows || []).map(s => [s.id, s]));
+    perfMap = Object.fromEntries((perfs || []).map(p => [p.id, { ...p, show: showMap[p.show_id] || null }]));
+  }
+
+  allRows = (rows || []).map(r => ({ ...r, performance: perfMap[r.performance_id] || null }));
   renderTable();
 }
 

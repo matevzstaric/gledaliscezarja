@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skrbniki — Admin Zarja</title>
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin">
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar__brand">
+      <img src="../img/zarja_logo.png" alt="Zarja"><span class="tag">Admin</span>
+    </div>
+    <nav class="admin-nav">
+      <ul>
+        <li><a href="index.html"><span class="icon">⌂</span>Nadzorna plošča</a></li>
+        <li><a href="predstave.html"><span class="icon">🎭</span>Predstave</a></li>
+        <li><a href="termini.html"><span class="icon">📅</span>Termini</a></li>
+        <li><a href="ansambel.html"><span class="icon">👥</span>Članstvo</a></li>
+        <li><a href="nagrade.html"><span class="icon">🏆</span>Nagrade</a></li>
+        <li><a href="sponzorji.html"><span class="icon">💎</span>Sponzorji</a></li>
+        <li><a href="rezervacije.html"><span class="icon">🎟</span>Rezervacije</a></li>
+        <li><a href="nastavitve.html"><span class="icon">⚙</span>Nastavitve</a></li>
+        <li><a href="skrbniki.html" class="active"><span class="icon">🔑</span>Skrbniki</a></li>
+      </ul>
+    </nav>
+    <div class="admin-sidebar__footer">
+      <div class="admin-user">Prijavljen kot:<br><strong id="adminUserEmail">…</strong></div>
+      <button onclick="admin.signOut()">Odjava</button>
+    </div>
+  </aside>
+
+  <main class="admin-content">
+    <div class="admin-header">
+      <div>
+        <h1>Skrbniki</h1>
+        <p class="sub">Seznam e-naslovov, ki imajo dostop do administracije.</p>
+      </div>
+      <button class="btn btn--primary" onclick="document.getElementById('newEmail').focus()">+ Nov skrbnik</button>
+    </div>
+
+    <form id="addForm" class="admin-form" onsubmit="addAdmin(event)" style="margin-bottom:2rem;">
+      <h3 style="margin-top:0;">Dodaj novega skrbnika</h3>
+      <p style="color:var(--c-muted); font-size:.9rem; margin-bottom:1.2rem;">
+        Po dodajanju lahko skrbnik klikne <em>Prijava</em> na admin strani, vnese ta e-naslov, in dobil bo enkratno povezavo za prijavo.
+      </p>
+      <div class="form-row--two">
+        <div class="form-row">
+          <label>E-naslov *</label>
+          <input required type="email" id="newEmail" name="email" placeholder="ime.priimek@email.si">
+        </div>
+        <div class="form-row">
+          <label>Ime in priimek (neobvezno)</label>
+          <input type="text" id="newName" name="full_name" placeholder="Ime Priimek">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Dodaj skrbnika</button>
+      </div>
+    </form>
+
+    <table class="data-table">
+      <thead><tr>
+        <th>E-naslov</th>
+        <th>Ime in priimek</th>
+        <th>Dodano</th>
+        <th class="actions">&nbsp;</th>
+      </tr></thead>
+      <tbody id="rowsBody"><tr><td colspan="4" class="empty">Nalagam …</td></tr></tbody>
+    </table>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+let allRows = [];
+
+(async function() {
+  const user = await admin.init();
+  if (!user) return;
+  await loadList();
+})();
+
+function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function loadList() {
+  const { data: rows, error } = await sb.from('admin_users').select('*').order('created_at', { ascending: true });
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  allRows = rows;
+  renderTable();
+}
+
+function renderTable() {
+  const body = document.getElementById('rowsBody');
+  if (allRows.length === 0) {
+    body.innerHTML = '<tr><td colspan="4" class="empty">Ni skrbnikov</td></tr>';
+    return;
+  }
+  const currentEmail = admin.user.email.toLowerCase();
+  body.innerHTML = allRows.map(r => {
+    const isMe = r.email.toLowerCase() === currentEmail;
+    const created = new Date(r.created_at);
+    const createdStr = `${created.getDate()}.${created.getMonth()+1}.${created.getFullYear()}`;
+    const youBadge = isMe ? ' <span class="status-pill status-pill--active" style="font-size:.65rem;">Ti</span>' : '';
+    const removeBtn = isMe
+      ? '<span style="color:var(--c-muted); font-size:.8rem;">Sebe ne moreš odstraniti</span>'
+      : `<button class="icon-btn icon-btn--danger" onclick="removeAdmin('${escapeHtml(r.email)}')" title="Odstrani skrbnika">✕</button>`;
+    return `
+      <tr>
+        <td><strong>${escapeHtml(r.email)}</strong>${youBadge}</td>
+        <td>${escapeHtml(r.full_name || '—')}</td>
+        <td style="color:var(--c-muted); font-size:.85rem;">${createdStr}</td>
+        <td class="actions">${removeBtn}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function addAdmin(e) {
+  e.preventDefault();
+  const form = e.target;
+  const email = form.email.value.trim().toLowerCase();
+  const fullName = form.full_name.value.trim() || null;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Dodajam…';
+
+  try {
+    const { error } = await sb.from('admin_users').insert({ email, full_name: fullName });
+    if (error) {
+      if (error.code === '23505') {
+        admin.toast('E-naslov je že na seznamu.', 'error');
+      } else {
+        throw error;
+      }
+    } else {
+      admin.toast(`Dodan: ${email}`);
+      form.reset();
+      await loadList();
+    }
+  } catch (err) {
+    admin.toast('Napaka: ' + (err.message || err), 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Dodaj skrbnika';
+  }
+}
+
+async function removeAdmin(email) {
+  if (!admin.confirm(`Res želite odstraniti skrbnika ${email}?\n\nIzgubili bodo dostop do admin strani takoj.`)) return;
+  const { error } = await sb.from('admin_users').delete().eq('email', email);
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  admin.toast('Odstranjeno.');
+  await loadList();
+}
+</script>
+
+</body>
+</html>
