@@ -14,19 +14,18 @@
 <div class="admin-layout">
   <aside class="admin-sidebar">
     <div class="admin-sidebar__brand">
-      <img src="../img/zarja_logo.png" alt="Zarja">
-      <span class="tag">Admin</span>
+      <img src="../img/zarja_logo.png" alt="Zarja"><span class="tag">Admin</span>
     </div>
     <nav class="admin-nav">
       <ul>
         <li><a href="index.html"><span class="icon">⌂</span>Nadzorna plošča</a></li>
         <li><a href="predstave.html"><span class="icon">🎭</span>Predstave</a></li>
-        <li><a href="termini.html" class=""><span class="icon">📅</span>Termini</a></li>
-        <li><a href="ansambel.html" class=""><span class="icon">👥</span>Članstvo</a></li>
-        <li><a href="nagrade.html" class=""><span class="icon">🏆</span>Nagrade</a></li>
+        <li><a href="termini.html"><span class="icon">📅</span>Termini</a></li>
+        <li><a href="ansambel.html"><span class="icon">👥</span>Članstvo</a></li>
+        <li><a href="nagrade.html"><span class="icon">🏆</span>Nagrade</a></li>
         <li><a href="sponzorji.html" class="active"><span class="icon">💎</span>Sponzorji</a></li>
-        <li><a href="rezervacije.html" class=""><span class="icon">🎟</span>Rezervacije</a></li>
-        <li><a href="nastavitve.html" class=""><span class="icon">⚙</span>Nastavitve</a></li>
+        <li><a href="rezervacije.html"><span class="icon">🎟</span>Rezervacije</a></li>
+        <li><a href="nastavitve.html"><span class="icon">⚙</span>Nastavitve</a></li>
       </ul>
     </nav>
     <div class="admin-sidebar__footer">
@@ -36,17 +35,75 @@
   </aside>
 
   <main class="admin-content">
-    <div class="admin-header">
-      <div>
-        <h1>Sponzorji</h1>
-        <p class="sub">Ta stran je v izdelavi.</p>
+    <div id="listView">
+      <div class="admin-header">
+        <div><h1>Sponzorji</h1><p class="sub">Sponzorji, donatorji in medijski pokrovitelji.</p></div>
+        <button class="btn btn--primary" onclick="openEditForm()">+ Nov sponzor</button>
       </div>
+
+      <div class="toolbar">
+        <input type="search" class="toolbar__search" id="searchBox" placeholder="Iskanje po imenu …">
+        <select class="toolbar__search" style="flex:0 0 200px;" id="tierFilter">
+          <option value="">Vsi tipi</option>
+          <option value="sponsor">Sponzor</option>
+          <option value="donor">Donator</option>
+          <option value="media">Medijski pokrovitelj</option>
+        </select>
+      </div>
+
+      <table class="data-table">
+        <thead><tr>
+          <th style="width:60px;">Logo</th><th>Ime</th><th>Tip</th><th>Spletna stran</th><th>Vrstni red</th><th>Aktiven</th><th class="actions">&nbsp;</th>
+        </tr></thead>
+        <tbody id="rowsBody"><tr><td colspan="7" class="empty">Nalagam …</td></tr></tbody>
+      </table>
     </div>
-    <div class="dash-card" style="text-align:center; padding:3rem;">
-      <div style="font-size:3rem; margin-bottom:1rem;">💎</div>
-      <h3 style="margin:0 0 .4rem;">Kmalu na voljo</h3>
-      <p style="color:var(--c-muted); margin:0;">Skrbnik še gradi to stran. Za zdaj lahko vsebino urejaš v Supabase Table Editor.</p>
-      <a href="https://supabase.com/dashboard" target="_blank" class="btn btn--secondary" style="margin-top:1.2rem;">Odpri Supabase ↗</a>
+
+    <div id="editView" class="hide">
+      <div class="admin-header">
+        <div><h1 id="editTitle">Nov sponzor</h1><p class="sub">Vnesite podatke sponzorja.</p></div>
+        <button class="btn btn--secondary" onclick="showList()">← Nazaj</button>
+      </div>
+
+      <form id="editForm" class="admin-form" onsubmit="saveRow(event)">
+        <input type="hidden" id="fieldId">
+
+        <div class="form-row"><label>Ime *</label><input required type="text" name="name"></div>
+
+        <div class="form-row--two">
+          <div class="form-row">
+            <label>Tip *</label>
+            <select required name="tier">
+              <option value="sponsor">Sponzor</option>
+              <option value="donor">Donator</option>
+              <option value="media">Medijski pokrovitelj</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Vrstni red</label><input type="number" name="display_order" value="100"></div>
+        </div>
+
+        <div class="form-row"><label>Spletna stran (URL)</label><input type="url" name="website_url" placeholder="https://..."></div>
+
+        <div class="form-row">
+          <label><input type="checkbox" name="active" checked> Aktiven (prikazan na spletni strani)</label>
+        </div>
+
+        <div class="form-row">
+          <label>Logo</label>
+          <label class="file-drop">
+            <input type="file" id="logoFile" accept="image/*">
+            <div id="logoDropText">Kliknite za nalaganje slike</div>
+            <img id="logoPreview" class="file-drop__preview hide">
+          </label>
+          <small style="color:var(--c-muted); font-size:.8rem; margin-top:.4rem;">Priporočamo PNG s prosojnim ozadjem.</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn--danger" id="deleteBtn" onclick="deleteRow()" style="margin-right:auto;">Izbriši</button>
+          <button type="button" class="btn btn--secondary" onclick="showList()">Prekliči</button>
+          <button type="submit" class="btn btn--primary">Shrani</button>
+        </div>
+      </form>
     </div>
   </main>
 </div>
@@ -55,7 +112,166 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
-<script>admin.init();</script>
+<script>
+let allRows = [];
+let editingId = null;
+let pendingFile = null;
+const TIER_LABELS = { sponsor: 'Sponzor', donor: 'Donator', media: 'Medijski pokrovitelj' };
+
+(async function() {
+  const user = await admin.init();
+  if (!user) return;
+  await loadList();
+  document.getElementById('searchBox').addEventListener('input', renderTable);
+  document.getElementById('tierFilter').addEventListener('change', renderTable);
+  document.getElementById('logoFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingFile = file;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.getElementById('logoPreview');
+      img.src = ev.target.result;
+      img.classList.remove('hide');
+      document.getElementById('logoDropText').textContent = 'Izbrano: ' + file.name;
+    };
+    reader.readAsDataURL(file);
+  });
+})();
+
+async function loadList() {
+  const { data: rows, error } = await sb.from('sponsors').select('*').order('tier').order('display_order');
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  allRows = rows;
+  renderTable();
+}
+
+function renderTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const tier = document.getElementById('tierFilter').value;
+  const filtered = allRows.filter(r => {
+    if (tier && r.tier !== tier) return false;
+    if (!q) return true;
+    return (r.name || '').toLowerCase().includes(q);
+  });
+  const body = document.getElementById('rowsBody');
+  if (filtered.length === 0) { body.innerHTML = '<tr><td colspan="7" class="empty">Ni sponzorjev</td></tr>'; return; }
+  body.innerHTML = filtered.map(r => {
+    const logo = r.logo_url
+      ? `<img src="${r.logo_url}" style="max-width:50px; max-height:40px; object-fit:contain;">`
+      : '<div class="poster-thumb" style="width:50px; height:40px;"></div>';
+    const link = r.website_url ? `<a href="${r.website_url}" target="_blank">${r.website_url.replace(/^https?:\/\//,'').slice(0,30)}</a>` : '<span style="color:var(--c-muted);">—</span>';
+    return `
+      <tr>
+        <td>${logo}</td>
+        <td><strong>${r.name}</strong></td>
+        <td>${TIER_LABELS[r.tier] || r.tier}</td>
+        <td>${link}</td>
+        <td>${r.display_order}</td>
+        <td>${r.active ? '✓' : '<span style="color:var(--c-muted);">ne</span>'}</td>
+        <td class="actions"><button class="icon-btn" onclick="openEditForm('${r.id}')">✎</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function showList() {
+  document.getElementById('listView').classList.remove('hide');
+  document.getElementById('editView').classList.add('hide');
+  editingId = null;
+  pendingFile = null;
+}
+
+function openEditForm(id) {
+  document.getElementById('listView').classList.add('hide');
+  document.getElementById('editView').classList.remove('hide');
+  editingId = id || null;
+  pendingFile = null;
+
+  const form = document.getElementById('editForm');
+  form.reset();
+  document.getElementById('logoPreview').classList.add('hide');
+  document.getElementById('logoDropText').textContent = 'Kliknite za nalaganje slike';
+
+  if (id) {
+    const r = allRows.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('editTitle').textContent = 'Uredi: ' + r.name;
+    document.getElementById('fieldId').value = r.id;
+    form.name.value = r.name;
+    form.tier.value = r.tier;
+    form.display_order.value = r.display_order || 100;
+    form.website_url.value = r.website_url || '';
+    form.active.checked = r.active !== false;
+    document.getElementById('deleteBtn').style.display = '';
+    if (r.logo_url) {
+      const img = document.getElementById('logoPreview');
+      img.src = r.logo_url;
+      img.classList.remove('hide');
+      document.getElementById('logoDropText').textContent = 'Trenutni logo (klik za zamenjavo)';
+    }
+  } else {
+    document.getElementById('editTitle').textContent = 'Nov sponzor';
+    document.getElementById('deleteBtn').style.display = 'none';
+    form.display_order.value = 100;
+    form.active.checked = true;
+  }
+}
+
+async function saveRow(e) {
+  e.preventDefault();
+  const form = e.target;
+  const isNew = !editingId;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Shranjujem…';
+
+  try {
+    const row = {
+      name: form.name.value,
+      tier: form.tier.value,
+      display_order: parseInt(form.display_order.value, 10) || 100,
+      website_url: form.website_url.value || null,
+      active: form.active.checked,
+    };
+
+    let res;
+    if (isNew) {
+      res = await sb.from('sponsors').insert(row).select().single();
+    } else {
+      res = await sb.from('sponsors').update(row).eq('id', editingId).select().single();
+    }
+    if (res.error) throw res.error;
+    const sponsorId = res.data.id;
+
+    if (pendingFile) {
+      const url = await admin.uploadLogo(pendingFile, sponsorId);
+      await sb.from('sponsors').update({ logo_url: url }).eq('id', sponsorId);
+    }
+
+    admin.toast(isNew ? 'Sponzor dodan.' : 'Spremembe shranjene.');
+    await loadList();
+    showList();
+  } catch (err) {
+    admin.toast('Napaka: ' + (err.message || err), 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Shrani';
+  }
+}
+
+async function deleteRow() {
+  if (!editingId) return;
+  const r = allRows.find(x => x.id === editingId);
+  if (!r) return;
+  if (!admin.confirm(`Res želite izbrisati sponzorja »${r.name}«?`)) return;
+  const { error } = await sb.from('sponsors').delete().eq('id', editingId);
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  admin.toast('Izbrisano.');
+  await loadList();
+  showList();
+}
+</script>
 
 </body>
 </html>

@@ -14,19 +14,18 @@
 <div class="admin-layout">
   <aside class="admin-sidebar">
     <div class="admin-sidebar__brand">
-      <img src="../img/zarja_logo.png" alt="Zarja">
-      <span class="tag">Admin</span>
+      <img src="../img/zarja_logo.png" alt="Zarja"><span class="tag">Admin</span>
     </div>
     <nav class="admin-nav">
       <ul>
         <li><a href="index.html"><span class="icon">⌂</span>Nadzorna plošča</a></li>
         <li><a href="predstave.html"><span class="icon">🎭</span>Predstave</a></li>
-        <li><a href="termini.html" class=""><span class="icon">📅</span>Termini</a></li>
-        <li><a href="ansambel.html" class=""><span class="icon">👥</span>Članstvo</a></li>
+        <li><a href="termini.html"><span class="icon">📅</span>Termini</a></li>
+        <li><a href="ansambel.html"><span class="icon">👥</span>Članstvo</a></li>
         <li><a href="nagrade.html" class="active"><span class="icon">🏆</span>Nagrade</a></li>
-        <li><a href="sponzorji.html" class=""><span class="icon">💎</span>Sponzorji</a></li>
-        <li><a href="rezervacije.html" class=""><span class="icon">🎟</span>Rezervacije</a></li>
-        <li><a href="nastavitve.html" class=""><span class="icon">⚙</span>Nastavitve</a></li>
+        <li><a href="sponzorji.html"><span class="icon">💎</span>Sponzorji</a></li>
+        <li><a href="rezervacije.html"><span class="icon">🎟</span>Rezervacije</a></li>
+        <li><a href="nastavitve.html"><span class="icon">⚙</span>Nastavitve</a></li>
       </ul>
     </nav>
     <div class="admin-sidebar__footer">
@@ -36,17 +35,79 @@
   </aside>
 
   <main class="admin-content">
-    <div class="admin-header">
-      <div>
-        <h1>Nagrade</h1>
-        <p class="sub">Ta stran je v izdelavi.</p>
+    <div id="listView">
+      <div class="admin-header">
+        <div><h1>Nagrade</h1><p class="sub">Vsa priznanja in nagrade gledališča.</p></div>
+        <button class="btn btn--primary" onclick="openEditForm()">+ Nova nagrada</button>
       </div>
+
+      <div class="toolbar">
+        <input type="search" class="toolbar__search" id="searchBox" placeholder="Iskanje po kategoriji, prejemniku ali predstavi …">
+        <select class="toolbar__search" style="flex:0 0 220px;" id="categoryFilter">
+          <option value="">Vse kategorije</option>
+        </select>
+      </div>
+
+      <table class="data-table">
+        <thead><tr>
+          <th style="width:70px;">Leto</th><th>Kategorija</th><th>Prejemnik</th><th>Vloga / Opis</th><th>Predstava</th><th style="width:90px;">Vidno</th><th class="actions">&nbsp;</th>
+        </tr></thead>
+        <tbody id="rowsBody"><tr><td colspan="7" class="empty">Nalagam …</td></tr></tbody>
+      </table>
     </div>
-    <div class="dash-card" style="text-align:center; padding:3rem;">
-      <div style="font-size:3rem; margin-bottom:1rem;">🏆</div>
-      <h3 style="margin:0 0 .4rem;">Kmalu na voljo</h3>
-      <p style="color:var(--c-muted); margin:0;">Skrbnik še gradi to stran. Za zdaj lahko vsebino urejaš v Supabase Table Editor.</p>
-      <a href="https://supabase.com/dashboard" target="_blank" class="btn btn--secondary" style="margin-top:1.2rem;">Odpri Supabase ↗</a>
+
+    <div id="editView" class="hide">
+      <div class="admin-header">
+        <div><h1 id="editTitle">Nova nagrada</h1></div>
+        <button class="btn btn--secondary" onclick="showList()">← Nazaj</button>
+      </div>
+
+      <form id="editForm" class="admin-form" onsubmit="saveRow(event)">
+        <input type="hidden" id="fieldId">
+
+        <div class="form-row--two">
+          <div class="form-row">
+            <label>Leto *</label>
+            <input required type="number" name="year" min="1900" max="2100" value="2025">
+          </div>
+          <div class="form-row">
+            <label>Vrstni red prikaza</label>
+            <input type="number" name="display_order" value="100">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Kategorija / Podeljevalec *</label>
+          <input required type="text" name="category" id="fieldCategory" list="categoryList" placeholder="npr. Sklad Staneta Severja">
+          <datalist id="categoryList"></datalist>
+          <small style="color:var(--c-muted); font-size:.78rem; margin-top:.25rem;">Začni tipkati za predloge iz obstoječih kategorij.</small>
+        </div>
+
+        <div class="form-row">
+          <label>Prejemnik (ime in priimek)</label>
+          <input type="text" name="recipient" placeholder="Pustite prazno, če gre za nagrado predstavi">
+        </div>
+
+        <div class="form-row">
+          <label>Vloga / Opis</label>
+          <input type="text" name="role_or_description" placeholder="npr. vloga Katurian">
+        </div>
+
+        <div class="form-row">
+          <label>Predstava</label>
+          <input type="text" name="show_title" placeholder="npr. Blazinec">
+        </div>
+
+        <div class="form-row">
+          <label><input type="checkbox" name="is_highlight"> Izpostavljena nagrada (prikazana v traku novic na domači strani)</label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn--danger" id="deleteBtn" onclick="deleteRow()" style="margin-right:auto;">Izbriši</button>
+          <button type="button" class="btn btn--secondary" onclick="showList()">Prekliči</button>
+          <button type="submit" class="btn btn--primary">Shrani</button>
+        </div>
+      </form>
     </div>
   </main>
 </div>
@@ -55,7 +116,139 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
-<script>admin.init();</script>
+<script>
+let allRows = [];
+let editingId = null;
+
+(async function() {
+  const user = await admin.init();
+  if (!user) return;
+  await loadList();
+  document.getElementById('searchBox').addEventListener('input', renderTable);
+  document.getElementById('categoryFilter').addEventListener('change', renderTable);
+})();
+
+async function loadList() {
+  const { data: rows, error } = await sb.from('awards').select('*').order('year', { ascending: false }).order('display_order');
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  allRows = rows;
+
+  // Refresh datalist + filter dropdown
+  const cats = [...new Set(rows.map(r => r.category).filter(Boolean))].sort();
+  document.getElementById('categoryList').innerHTML = cats.map(c => `<option value="${escapeAttr(c)}">`).join('');
+  const filter = document.getElementById('categoryFilter');
+  const prev = filter.value;
+  filter.innerHTML = '<option value="">Vse kategorije</option>' + cats.map(c => `<option value="${escapeAttr(c)}"${c===prev?' selected':''}>${escapeHtml(c)}</option>`).join('');
+
+  renderTable();
+}
+
+function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+function renderTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const cat = document.getElementById('categoryFilter').value;
+  const filtered = allRows.filter(r => {
+    if (cat && r.category !== cat) return false;
+    if (!q) return true;
+    return (r.category || '').toLowerCase().includes(q)
+        || (r.recipient || '').toLowerCase().includes(q)
+        || (r.show_title || '').toLowerCase().includes(q)
+        || (r.role_or_description || '').toLowerCase().includes(q);
+  });
+  const body = document.getElementById('rowsBody');
+  if (filtered.length === 0) { body.innerHTML = '<tr><td colspan="7" class="empty">Ni nagrad</td></tr>'; return; }
+  body.innerHTML = filtered.map(r => `
+    <tr>
+      <td><strong style="font-family:var(--font-display); font-size:1.2rem; color:var(--c-red);">${r.year}</strong></td>
+      <td>${escapeHtml(r.category)}</td>
+      <td>${escapeHtml(r.recipient || '—')}</td>
+      <td>${escapeHtml(r.role_or_description || '')}</td>
+      <td><em>${escapeHtml(r.show_title || '')}</em></td>
+      <td>${r.is_highlight ? '<span class="status-pill status-pill--active">★</span>' : '<span style="color:var(--c-muted);">—</span>'}</td>
+      <td class="actions"><button class="icon-btn" onclick="openEditForm('${r.id}')">✎</button></td>
+    </tr>
+  `).join('');
+}
+
+function showList() {
+  document.getElementById('listView').classList.remove('hide');
+  document.getElementById('editView').classList.add('hide');
+  editingId = null;
+}
+
+function openEditForm(id) {
+  document.getElementById('listView').classList.add('hide');
+  document.getElementById('editView').classList.remove('hide');
+  editingId = id || null;
+  const form = document.getElementById('editForm');
+  form.reset();
+
+  if (id) {
+    const r = allRows.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('editTitle').textContent = `Uredi: ${r.year} · ${r.category}`;
+    document.getElementById('fieldId').value = r.id;
+    form.year.value = r.year;
+    form.display_order.value = r.display_order || 100;
+    form.category.value = r.category || '';
+    form.recipient.value = r.recipient || '';
+    form.role_or_description.value = r.role_or_description || '';
+    form.show_title.value = r.show_title || '';
+    form.is_highlight.checked = !!r.is_highlight;
+    document.getElementById('deleteBtn').style.display = '';
+  } else {
+    document.getElementById('editTitle').textContent = 'Nova nagrada';
+    document.getElementById('deleteBtn').style.display = 'none';
+    form.year.value = new Date().getFullYear();
+    form.display_order.value = 100;
+  }
+}
+
+async function saveRow(e) {
+  e.preventDefault();
+  const form = e.target;
+  const isNew = !editingId;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Shranjujem…';
+
+  try {
+    const row = {
+      year: parseInt(form.year.value, 10),
+      category: form.category.value,
+      recipient: form.recipient.value || null,
+      role_or_description: form.role_or_description.value || null,
+      show_title: form.show_title.value || null,
+      is_highlight: form.is_highlight.checked,
+      display_order: parseInt(form.display_order.value, 10) || 100,
+    };
+    const res = isNew
+      ? await sb.from('awards').insert(row).select().single()
+      : await sb.from('awards').update(row).eq('id', editingId).select().single();
+    if (res.error) throw res.error;
+    admin.toast(isNew ? 'Nagrada dodana.' : 'Spremembe shranjene.');
+    await loadList();
+    showList();
+  } catch (err) {
+    admin.toast('Napaka: ' + (err.message || err), 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Shrani';
+  }
+}
+
+async function deleteRow() {
+  if (!editingId) return;
+  if (!admin.confirm('Res želite izbrisati to nagrado?')) return;
+  const { error } = await sb.from('awards').delete().eq('id', editingId);
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  admin.toast('Izbrisano.');
+  await loadList();
+  showList();
+}
+</script>
 
 </body>
 </html>

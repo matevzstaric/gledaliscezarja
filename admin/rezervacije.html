@@ -14,19 +14,18 @@
 <div class="admin-layout">
   <aside class="admin-sidebar">
     <div class="admin-sidebar__brand">
-      <img src="../img/zarja_logo.png" alt="Zarja">
-      <span class="tag">Admin</span>
+      <img src="../img/zarja_logo.png" alt="Zarja"><span class="tag">Admin</span>
     </div>
     <nav class="admin-nav">
       <ul>
         <li><a href="index.html"><span class="icon">⌂</span>Nadzorna plošča</a></li>
         <li><a href="predstave.html"><span class="icon">🎭</span>Predstave</a></li>
-        <li><a href="termini.html" class=""><span class="icon">📅</span>Termini</a></li>
-        <li><a href="ansambel.html" class=""><span class="icon">👥</span>Članstvo</a></li>
-        <li><a href="nagrade.html" class=""><span class="icon">🏆</span>Nagrade</a></li>
-        <li><a href="sponzorji.html" class=""><span class="icon">💎</span>Sponzorji</a></li>
+        <li><a href="termini.html"><span class="icon">📅</span>Termini</a></li>
+        <li><a href="ansambel.html"><span class="icon">👥</span>Članstvo</a></li>
+        <li><a href="nagrade.html"><span class="icon">🏆</span>Nagrade</a></li>
+        <li><a href="sponzorji.html"><span class="icon">💎</span>Sponzorji</a></li>
         <li><a href="rezervacije.html" class="active"><span class="icon">🎟</span>Rezervacije</a></li>
-        <li><a href="nastavitve.html" class=""><span class="icon">⚙</span>Nastavitve</a></li>
+        <li><a href="nastavitve.html"><span class="icon">⚙</span>Nastavitve</a></li>
       </ul>
     </nav>
     <div class="admin-sidebar__footer">
@@ -39,15 +38,32 @@
     <div class="admin-header">
       <div>
         <h1>Rezervacije</h1>
-        <p class="sub">Ta stran je v izdelavi.</p>
+        <p class="sub">Vse prijavljene rezervacije vstopnic.</p>
       </div>
+      <button class="btn btn--secondary" onclick="loadList()">⟳ Osveži</button>
     </div>
-    <div class="dash-card" style="text-align:center; padding:3rem;">
-      <div style="font-size:3rem; margin-bottom:1rem;">🎟</div>
-      <h3 style="margin:0 0 .4rem;">Kmalu na voljo</h3>
-      <p style="color:var(--c-muted); margin:0;">Skrbnik še gradi to stran. Za zdaj lahko vsebino urejaš v Supabase Table Editor.</p>
-      <a href="https://supabase.com/dashboard" target="_blank" class="btn btn--secondary" style="margin-top:1.2rem;">Odpri Supabase ↗</a>
+
+    <div style="background:#fff7e6; border:1px solid #f0d97a; padding:.9rem 1.1rem; border-radius:6px; font-size:.9rem; margin-bottom:1.5rem;">
+      <strong>Prototip:</strong> Plačila prek Stripe še niso aktivna. Ko bo plačilni sistem postavljen, se bodo tu pojavile resnične rezervacije z vsemi podatki naročnikov.
     </div>
+
+    <div class="toolbar">
+      <input type="search" class="toolbar__search" id="searchBox" placeholder="Iskanje po imenu ali e-naslovu …">
+      <select class="toolbar__search" style="flex:0 0 200px;" id="statusFilter">
+        <option value="">Vsi statusi</option>
+        <option value="pending">Čaka</option>
+        <option value="paid">Plačano</option>
+        <option value="refunded">Vrnjeno</option>
+        <option value="cancelled">Odpovedano</option>
+      </select>
+    </div>
+
+    <table class="data-table">
+      <thead><tr>
+        <th>Datum nakupa</th><th>Predstava</th><th>Termin</th><th>Stranka</th><th>E-naslov</th><th>Sedeži</th><th>Znesek</th><th>Status</th>
+      </tr></thead>
+      <tbody id="rowsBody"><tr><td colspan="8" class="empty">Nalagam …</td></tr></tbody>
+    </table>
   </main>
 </div>
 
@@ -55,7 +71,76 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
-<script>admin.init();</script>
+<script>
+let allRows = [];
+const STATUS_LABELS = {
+  pending:   { label: 'Čaka',       cls: 'status-pill--upcoming' },
+  paid:      { label: 'Plačano',    cls: 'status-pill--active' },
+  refunded:  { label: 'Vrnjeno',    cls: 'status-pill--archived' },
+  cancelled: { label: 'Odpovedano', cls: 'status-pill--archived' },
+};
+
+(async function() {
+  const user = await admin.init();
+  if (!user) return;
+  await loadList();
+  document.getElementById('searchBox').addEventListener('input', renderTable);
+  document.getElementById('statusFilter').addEventListener('change', renderTable);
+})();
+
+async function loadList() {
+  // Pull bookings + linked performance + linked show + seat count
+  const { data: rows, error } = await sb.from('bookings')
+    .select('*, performance:performances(performance_date, performance_time, show:shows(title)), booking_seats(id)')
+    .order('created_at', { ascending: false });
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  allRows = rows;
+  renderTable();
+}
+
+function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderTable() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  const filtered = allRows.filter(r => {
+    if (status && r.status !== status) return false;
+    if (!q) return true;
+    return (r.customer_name || '').toLowerCase().includes(q)
+        || (r.customer_email || '').toLowerCase().includes(q);
+  });
+
+  const body = document.getElementById('rowsBody');
+  if (filtered.length === 0) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">Še ni rezervacij. Ko bo plačilni sistem aktiven, se bodo pojavile tukaj.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = filtered.map(r => {
+    const created = new Date(r.created_at);
+    const createdStr = `${created.getDate()}.${created.getMonth()+1}.${created.getFullYear()} ${String(created.getHours()).padStart(2,'0')}:${String(created.getMinutes()).padStart(2,'0')}`;
+    const perf = r.performance;
+    const perfStr = perf
+      ? `${perf.performance_date} ob ${(perf.performance_time||'').slice(0,5)}`
+      : '—';
+    const showTitle = perf?.show?.title || '—';
+    const seatCount = (r.booking_seats || []).length;
+    const st = STATUS_LABELS[r.status] || STATUS_LABELS.pending;
+    return `
+      <tr>
+        <td>${createdStr}</td>
+        <td><strong>${escapeHtml(showTitle)}</strong></td>
+        <td style="font-size:.85rem; color:var(--c-anthracite);">${perfStr}</td>
+        <td>${escapeHtml(r.customer_name)}</td>
+        <td><a href="mailto:${escapeHtml(r.customer_email)}">${escapeHtml(r.customer_email)}</a></td>
+        <td>${seatCount}</td>
+        <td><strong>${Number(r.total_eur).toFixed(2)} €</strong></td>
+        <td><span class="status-pill ${st.cls}">${st.label}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+</script>
 
 </body>
 </html>

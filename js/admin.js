@@ -69,18 +69,20 @@ const admin = {
   },
 
   /* ---- Storage upload ---- */
-  async uploadPoster(file, slug) {
-    // Use slug + original extension; replace if exists
+  async uploadFile(bucket, file, key) {
     const ext = file.name.split('.').pop().toLowerCase();
-    const filename = `${slug}.${ext}`;
-    const { error } = await sb.storage.from('posters').upload(filename, file, {
+    const filename = `${key}.${ext}`;
+    const { error } = await sb.storage.from(bucket).upload(filename, file, {
       cacheControl: '3600',
       upsert: true,
     });
     if (error) throw error;
-    const { data: { publicUrl } } = sb.storage.from('posters').getPublicUrl(filename);
+    const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(filename);
     return publicUrl;
   },
+  uploadPoster(file, slug)   { return this.uploadFile('posters',   file, slug); },
+  uploadPortrait(file, slug) { return this.uploadFile('portraits', file, slug); },
+  uploadLogo(file, slug)     { return this.uploadFile('logos',     file, slug); },
 };
 
 /* ---- Slug helper (Slovenian-aware) ---- */

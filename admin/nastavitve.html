@@ -21,11 +21,11 @@
       <ul>
         <li><a href="index.html"><span class="icon">⌂</span>Nadzorna plošča</a></li>
         <li><a href="predstave.html"><span class="icon">🎭</span>Predstave</a></li>
-        <li><a href="termini.html" class=""><span class="icon">📅</span>Termini</a></li>
-        <li><a href="ansambel.html" class=""><span class="icon">👥</span>Članstvo</a></li>
-        <li><a href="nagrade.html" class=""><span class="icon">🏆</span>Nagrade</a></li>
-        <li><a href="sponzorji.html" class=""><span class="icon">💎</span>Sponzorji</a></li>
-        <li><a href="rezervacije.html" class=""><span class="icon">🎟</span>Rezervacije</a></li>
+        <li><a href="termini.html"><span class="icon">📅</span>Termini</a></li>
+        <li><a href="ansambel.html"><span class="icon">👥</span>Članstvo</a></li>
+        <li><a href="nagrade.html"><span class="icon">🏆</span>Nagrade</a></li>
+        <li><a href="sponzorji.html"><span class="icon">💎</span>Sponzorji</a></li>
+        <li><a href="rezervacije.html"><span class="icon">🎟</span>Rezervacije</a></li>
         <li><a href="nastavitve.html" class="active"><span class="icon">⚙</span>Nastavitve</a></li>
       </ul>
     </nav>
@@ -39,15 +39,16 @@
     <div class="admin-header">
       <div>
         <h1>Nastavitve</h1>
-        <p class="sub">Ta stran je v izdelavi.</p>
+        <p class="sub">Kontaktni podatki, naslovi, besedila na domači strani.</p>
       </div>
+      <button class="btn btn--primary" id="saveBtn" onclick="saveAll()">Shrani spremembe</button>
     </div>
-    <div class="dash-card" style="text-align:center; padding:3rem;">
-      <div style="font-size:3rem; margin-bottom:1rem;">⚙</div>
-      <h3 style="margin:0 0 .4rem;">Kmalu na voljo</h3>
-      <p style="color:var(--c-muted); margin:0;">Skrbnik še gradi to stran. Za zdaj lahko vsebino urejaš v Supabase Table Editor.</p>
-      <a href="https://supabase.com/dashboard" target="_blank" class="btn btn--secondary" style="margin-top:1.2rem;">Odpri Supabase ↗</a>
-    </div>
+
+    <form id="settingsForm" class="admin-form" onsubmit="event.preventDefault(); saveAll();">
+      <div id="settingsBody">
+        <p style="text-align:center; padding:2rem; color:var(--c-muted);">Nalagam …</p>
+      </div>
+    </form>
   </main>
 </div>
 
@@ -55,7 +56,92 @@
 <script src="../js/supabase-client.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
-<script>admin.init();</script>
+<script>
+let allSettings = [];
+
+(async function() {
+  const user = await admin.init();
+  if (!user) return;
+  await loadSettings();
+})();
+
+async function loadSettings() {
+  const { data: rows, error } = await sb.from('site_settings').select('*').order('key');
+  if (error) { admin.toast('Napaka: ' + error.message, 'error'); return; }
+  allSettings = rows;
+  renderSettings();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderSettings() {
+  const groups = {
+    'Kontaktni podatki':         allSettings.filter(s => s.key.startsWith('contact_') || s.key.startsWith('address_')),
+    'Pravni podatki':            allSettings.filter(s => ['legal_name','tax_number','registration_number'].includes(s.key)),
+    'Domača stran — hero':       allSettings.filter(s => s.key.startsWith('hero_')),
+    'Domača stran — trak novic': allSettings.filter(s => s.key.startsWith('news_strip_')),
+    'Cene vstopnic — oznake':    allSettings.filter(s => s.key.startsWith('ticket_label_')),
+  };
+  const assigned = new Set(Object.values(groups).flat().map(s => s.key));
+  groups['Ostalo'] = allSettings.filter(s => !assigned.has(s.key));
+
+  const body = document.getElementById('settingsBody');
+  body.innerHTML = Object.entries(groups)
+    .filter(([_, rows]) => rows.length > 0)
+    .map(([heading, rows]) => `
+      <h3 class="subgroup-title" style="color:var(--c-anthracite); margin-top:2rem; margin-bottom:1rem;">${heading}</h3>
+      ${rows.map(s => {
+        const isLong = (s.value || '').length > 80 || s.key.includes('news_strip_text');
+        const inputEl = isLong
+          ? `<textarea data-key="${s.key}" rows="3">${escapeHtml(s.value || '')}</textarea>`
+          : `<input data-key="${s.key}" type="text" value="${escapeHtml(s.value || '')}">`;
+        return `
+          <div class="form-row" style="margin-bottom:1.4rem;">
+            <label>${s.description || s.key}</label>
+            ${inputEl}
+            <small style="color:var(--c-muted); font-size:.78rem; margin-top:.25rem;">Ključ: <code>${s.key}</code></small>
+          </div>
+        `;
+      }).join('')}
+    `).join('');
+}
+
+async function saveAll() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Shranjujem…';
+
+  const updates = [];
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    const oldVal = (allSettings.find(s => s.key === key) || {}).value || '';
+    const newVal = el.value;
+    if (oldVal !== newVal) updates.push({ key, value: newVal });
+  });
+
+  if (updates.length === 0) {
+    admin.toast('Ni sprememb.');
+    btn.disabled = false;
+    btn.textContent = 'Shrani spremembe';
+    return;
+  }
+
+  const { error } = await sb.from('site_settings').upsert(
+    updates.map(u => ({ ...u, updated_at: new Date().toISOString() })),
+    { onConflict: 'key' }
+  );
+  if (error) {
+    admin.toast('Napaka: ' + error.message, 'error');
+  } else {
+    admin.toast(`Shranjeno: ${updates.length} ${updates.length === 1 ? 'sprememba' : 'sprememb'}.`);
+    await loadSettings();
+  }
+  btn.disabled = false;
+  btn.textContent = 'Shrani spremembe';
+}
+</script>
 
 </body>
 </html>
