@@ -60,13 +60,33 @@ const data = {
 
   /* ---- ENSEMBLE ---- */
   async listEnsemble({ group = null } = {}) {
-    let q = sb.from('ensemble_members').select('*')
-      .eq('active', true)
-      .order('display_order', { ascending: true });
-    if (group) q = q.eq('group_name', group);
-    const { data: rows, error } = await q;
+    // Fetch all active members, then filter by group from the memberships array.
+    // Each person can be in multiple groups, with a different role per group.
+    const { data: rows, error } = await sb.from('ensemble_members').select('*')
+      .eq('active', true);
     if (error) { console.error('listEnsemble', error); return []; }
-    return rows;
+
+    if (!group) {
+      // Return everyone with their primary (first) membership info
+      return rows.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+    }
+
+    // For the requested group, override role/position_title/display_order with
+    // the values from THAT group's membership entry.
+    return rows
+      .map(m => {
+        const ms = m.memberships || [];
+        const match = ms.find(x => x && x.group_name === group);
+        if (!match) return null;
+        return {
+          ...m,
+          role: match.role || m.role,
+          position_title: match.position_title || m.position_title,
+          display_order: match.display_order ?? m.display_order ?? 100,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
   },
 
   /* ---- AWARDS ---- */

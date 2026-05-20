@@ -59,7 +59,7 @@
 
       <table class="data-table">
         <thead><tr>
-          <th style="width:50px;">Foto</th><th>Ime in priimek</th><th>Skupina</th><th>Vloga / Funkcija</th><th>Vrstni red</th><th>Aktiven</th><th class="actions">&nbsp;</th>
+          <th style="width:50px;">Foto</th><th>Ime in priimek</th><th>Skupine</th><th>Vloge</th><th style="width:60px;">#</th><th>Aktiven</th><th class="actions">&nbsp;</th>
         </tr></thead>
         <tbody id="rowsBody"><tr><td colspan="7" class="empty">Nalagam …</td></tr></tbody>
       </table>
@@ -76,33 +76,6 @@
 
         <div class="form-row"><label>Ime in priimek *</label><input required type="text" name="full_name"></div>
 
-        <div class="form-row--two">
-          <div class="form-row">
-            <label>Skupina *</label>
-            <select required name="group_name">
-              <option value="igralci">Članstvo (ansambel)</option>
-              <option value="teatrarij">Teatrarij</option>
-              <option value="tehnika">Tehnična ekipa</option>
-              <option value="vodstvo">Vodstvo</option>
-              <option value="ostali">Ostale funkcije</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>Vrstni red prikaza</label>
-            <input type="number" name="display_order" value="100">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <label>Vloga / Funkcija *</label>
-          <input required type="text" name="role" placeholder="npr. Igralka, Tajnica, Marketing">
-        </div>
-
-        <div class="form-row">
-          <label>Naziv (samo za vodstvo / ostale)</label>
-          <input type="text" name="position_title" placeholder="npr. Predsednik (uporabi se v kartici vodstva)">
-        </div>
-
         <div class="form-row">
           <label><input type="checkbox" name="active" checked> Aktiven (prikazan na spletni strani)</label>
         </div>
@@ -116,6 +89,16 @@
           </label>
           <small style="color:var(--c-muted); font-size:.8rem; margin-top:.4rem;">Kvadratna ali pokončna fotografija, npr. 600×800 px.</small>
         </div>
+
+        <hr style="border:none; border-top:1px solid var(--c-line); margin:1.5rem 0;">
+
+        <h3 style="margin-bottom:.4rem;">Članstvo v skupinah</h3>
+        <p style="color:var(--c-muted); font-size:.88rem; margin-bottom:1rem;">
+          Oseba je lahko v več skupinah hkrati (npr. Žiga Medvešek je hkrati član igralskega ansambla in predsednik). Vsako članstvo ima svojo vlogo in vrstni red prikaza znotraj te skupine.
+        </p>
+
+        <div id="membershipsEditor"></div>
+        <button type="button" class="btn btn--secondary" onclick="addMembership()" style="margin-top:.4rem;">+ Dodaj v skupino</button>
 
         <div class="form-actions">
           <button type="button" class="btn btn--danger" id="deleteBtn" onclick="deleteRow()" style="margin-right:auto;">Izbriši</button>
