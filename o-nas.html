@@ -264,15 +264,37 @@ function leaderCard(m) {
   });
 
   function renderAwardRow(a) {
-    const parts = [];
-    if (a.role_or_description) parts.push(a.role_or_description);
-    if (a.show_title) parts.push(`<em>${a.show_title}</em>`);
-    const detail = parts.join(' — ');
-    const recipientHtml = a.recipient
-      ? `<strong>${a.recipient}</strong>${detail ? ' · ' + detail : ''}`
-      : (detail || '');
+    // Support both new `recipients` JSON array and legacy single `recipient` field
+    const recipients = (a.recipients && a.recipients.length > 0)
+      ? a.recipients
+      : (a.recipient ? [{ name: a.recipient, role_or_description: a.role_or_description }] : []);
+
+    const showHtml = a.show_title ? `<em>${a.show_title}</em>` : '';
+    const awardDesc = a.role_or_description || '';
+
+    let recipientHtml = '';
+    if (recipients.length === 0) {
+      const parts = [awardDesc, showHtml].filter(Boolean).join(' — ');
+      recipientHtml = parts;
+    } else if (recipients.length === 1) {
+      const r = recipients[0];
+      const detail = r.role_or_description || awardDesc;
+      const parts = [];
+      if (detail) parts.push(detail);
+      if (showHtml) parts.push(showHtml);
+      recipientHtml = `<strong>${r.name}</strong>${parts.length ? ' · ' + parts.join(' — ') : ''}`;
+    } else {
+      // Multiple recipients — show as a list
+      const items = recipients.map(r => {
+        const det = r.role_or_description ? ` <span style="color:#9c9c9c;">(${r.role_or_description})</span>` : '';
+        return `<strong>${r.name}</strong>${det}`;
+      }).join(', ');
+      const suffix = [awardDesc, showHtml].filter(Boolean).join(' — ');
+      recipientHtml = `${items}${suffix ? ' · ' + suffix : ''}`;
+    }
+
     return `
-      <div class="award-row" data-category="${a.category}" data-recipient="${a.recipient || ''}">
+      <div class="award-row" data-category="${a.category}">
         <div class="award-row__year">${a.year}</div>
         <div class="award-row__category">${a.category}</div>
         <div class="award-row__detail">${recipientHtml}</div>

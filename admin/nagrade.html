@@ -88,19 +88,25 @@
         </div>
 
         <div class="form-row">
-          <label>Prejemnik (ime in priimek)</label>
-          <input type="text" name="recipient" placeholder="Pustite prazno, če gre za nagrado predstavi">
-        </div>
-
-        <div class="form-row">
-          <label>Vloga / Opis</label>
-          <input type="text" name="role_or_description" placeholder="npr. vloga Katurian">
+          <label>Vloga / Opis nagrade (skupna za vse prejemnike)</label>
+          <input type="text" name="role_or_description" placeholder="npr. najboljša predstava">
+          <small style="color:var(--c-muted); font-size:.78rem; margin-top:.25rem;">Splošen opis nagrade. Posamezni prejemniki imajo lahko še svoj opis spodaj.</small>
         </div>
 
         <div class="form-row">
           <label>Predstava</label>
           <input type="text" name="show_title" placeholder="npr. Blazinec">
         </div>
+
+        <hr style="border:none; border-top:1px solid var(--c-line); margin:1.5rem 0;">
+
+        <h3 style="margin-bottom:.4rem;">Prejemniki</h3>
+        <p style="color:var(--c-muted); font-size:.88rem; margin-bottom:1rem;">
+          Pustite prazno, če je nagrada podeljena predstavi/produkciji brez konkretne osebe (npr. »Najboljša predstava«). Za individualne nagrade dodajte enega ali več prejemnikov.
+        </p>
+
+        <div id="recipientsEditor"></div>
+        <button type="button" class="btn btn--secondary" onclick="addRecipient()" style="margin-top:.4rem;">+ Dodaj prejemnika</button>
 
         <div class="form-row">
           <label><input type="checkbox" name="is_highlight"> Izpostavljena nagrada (prikazana v traku novic na domači strani)</label>
