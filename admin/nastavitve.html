@@ -142,6 +142,9 @@ async function saveAll() {
   btn.disabled = false;
   btn.textContent = 'Shrani spremembe';
 }
+
+  // expose-to-window: ensure inline onclick handlers can find these regardless of scoping
+  if (typeof saveAll === "function") window.saveAll = saveAll;
 </script>
 
 </body>

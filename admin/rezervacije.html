@@ -160,6 +160,9 @@ function renderTable() {
     `;
   }).join('');
 }
+
+  // expose-to-window: ensure inline onclick handlers can find these regardless of scoping
+  if (typeof loadList === "function") window.loadList = loadList;
 </script>
 
 </body>

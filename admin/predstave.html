@@ -386,6 +386,11 @@ async function deleteShow() {
   await loadList();
   showList();
 }
+
+  // expose-to-window: ensure inline onclick handlers can find these regardless of scoping
+  if (typeof openEditForm === "function") window.openEditForm = openEditForm;
+  if (typeof showList === "function") window.showList = showList;
+  if (typeof loadList === "function") window.loadList = loadList;
 </script>
 
 </body>

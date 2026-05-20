@@ -161,6 +161,11 @@ async function removeAdmin(email) {
   admin.toast('Odstranjeno.');
   await loadList();
 }
+
+  // expose-to-window: ensure inline onclick handlers can find these regardless of scoping
+  if (typeof addAdmin === "function") window.addAdmin = addAdmin;
+  if (typeof removeAdmin === "function") window.removeAdmin = removeAdmin;
+  if (typeof loadList === "function") window.loadList = loadList;
 </script>
 
 </body>
