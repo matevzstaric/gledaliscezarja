@@ -259,7 +259,24 @@ p { margin: 0 0 1em; }
   font-size: .82rem; color: var(--c-muted); margin-bottom: .9rem;
 }
 .show-card__meta span { display: inline-flex; align-items: center; gap: .35rem; }
-.show-card__desc { color: #555; font-size: .95rem; flex: 1; margin-bottom: 1rem; }
+.show-card__desc { color: #555; font-size: .95rem; flex: 1; margin-bottom: .4rem; white-space: pre-line; }
+.show-card__desc--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.show-card__desc--expanded { -webkit-line-clamp: unset; line-clamp: unset; display: block; }
+.show-card__desc-toggle {
+  background: none; border: none; padding: 0;
+  color: var(--c-red); font-weight: 600; font-family: inherit;
+  font-size: .85rem; cursor: pointer;
+  align-self: flex-start;
+  margin-bottom: .8rem;
+}
+.show-card__desc-toggle:hover { color: var(--c-red-dark); text-decoration: underline; }
 .show-card__cta {
   display: inline-flex; align-items: center; gap: .4rem;
   color: var(--c-red); font-weight: 600; font-size: .9rem;

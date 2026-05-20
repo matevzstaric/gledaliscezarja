@@ -86,6 +86,10 @@
 <script src="js/supabase-client.js"></script>
 <script src="js/data.js"></script>
 <script>
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function renderShowCard(s, opts = {}) {
   const meta = [
     s.type && `<span>🎭 ${s.type}</span>`,
@@ -94,10 +98,20 @@ function renderShowCard(s, opts = {}) {
   ].filter(Boolean).join('');
   const badge = opts.badge ? `<span class="show-card__badge">${opts.badge}</span>` : '';
   const posterTitle = (s.poster_title || s.title).replace(/\n/g, '<br>');
-  // If poster_url is set, render the image; otherwise fall back to stylized text
   const poster = s.poster_url
     ? `<img src="${s.poster_url}" alt="${s.title}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">`
     : `<div class="show-card__poster-title">${posterTitle}</div>`;
+
+  // Description with "Prikaži več" if it's long enough to truncate
+  const desc = s.description || '';
+  const isLong = desc.length > 180 || desc.includes('\n');
+  const descBlock = isLong
+    ? `
+      <p class="show-card__desc show-card__desc--clamped">${escapeHtml(desc)}</p>
+      <button type="button" class="show-card__desc-toggle" onclick="toggleDesc(this)">Prikaži več →</button>
+    `
+    : `<p class="show-card__desc">${escapeHtml(desc)}</p>`;
+
   return `
     <article class="show-card">
       <div class="show-card__poster">
@@ -107,11 +121,18 @@ function renderShowCard(s, opts = {}) {
       <div class="show-card__body">
         <h3 class="show-card__title">${s.title}</h3>
         <div class="show-card__meta">${meta}</div>
-        <p class="show-card__desc">${s.description || ''}</p>
+        ${descBlock}
         <a class="show-card__cta" href="vstopnice.html?show=${s.id}">Vstopnice →</a>
       </div>
     </article>
   `;
+}
+
+function toggleDesc(btn) {
+  const desc = btn.previousElementSibling;
+  const expanded = desc.classList.toggle('show-card__desc--expanded');
+  desc.classList.toggle('show-card__desc--clamped', !expanded);
+  btn.textContent = expanded ? 'Prikaži manj ↑' : 'Prikaži več →';
 }
 
 (async function initRepertoar() {
