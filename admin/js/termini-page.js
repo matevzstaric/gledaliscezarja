@@ -7,8 +7,9 @@ const STATUS_LABELS = {
   sold_out:  { label: 'Razprodano', cls: 'status-pill--upcoming' },
   cancelled: { label: 'Odpovedano', cls: 'status-pill--archived' },
 };
-const MONTHS_SL = ['januar','februar','marec','april','maj','junij','julij','avgust','september','oktober','november','december'];
-const DAYS_SL = ['nedelja','ponedeljek','torek','sreda','četrtek','petek','sobota'];
+// Local copies for full-name display (data.js has uppercase abbrevs; rename to avoid redeclaration)
+const MONTHS_FULL_LC = ['januar','februar','marec','april','maj','junij','julij','avgust','september','oktober','november','december'];
+const DAYS_FULL_LC = ['nedelja','ponedeljek','torek','sreda','četrtek','petek','sobota'];
 
 (async function() {
   const user = await admin.init();
@@ -66,7 +67,7 @@ function renderTable() {
 
   body.innerHTML = filtered.map(r => {
     const d = new Date(r.performance_date + 'T00:00:00');
-    const dateStr = `${DAYS_SL[d.getDay()]}, ${d.getDate()}. ${MONTHS_SL[d.getMonth()]} ${d.getFullYear()}`;
+    const dateStr = `${DAYS_FULL_LC[d.getDay()]}, ${d.getDate()}. ${MONTHS_FULL_LC[d.getMonth()]} ${d.getFullYear()}`;
     const past = r.performance_date < today;
     const st = STATUS_LABELS[r.status] || STATUS_LABELS.scheduled;
     return `
